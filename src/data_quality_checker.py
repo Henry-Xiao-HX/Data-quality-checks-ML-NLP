@@ -8,12 +8,12 @@ from typing import List, Dict, Union, Optional
 import numpy as np
 
 try:
-    from .rouge import ROUGECalculator, ROUGEAggregator
-    from .bleu import BLEUCalculator, BLEUAggregator
+    from .generative_ai_text_model.rouge import ROUGECalculator, ROUGEAggregator
+    from .generative_ai_text_model.bleu import BLEUCalculator, BLEUAggregator
 except ImportError:
     # Fallback for direct imports
-    from rouge import ROUGECalculator, ROUGEAggregator
-    from bleu import BLEUCalculator, BLEUAggregator
+    from generative_ai_text_model.rouge import ROUGECalculator, ROUGEAggregator
+    from generative_ai_text_model.bleu import BLEUCalculator, BLEUAggregator
 
 
 class DataQualityChecker:
