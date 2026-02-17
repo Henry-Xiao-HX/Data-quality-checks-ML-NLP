@@ -1,23 +1,28 @@
 """
-Data Quality Checker module with ROUGE and BLEU metrics.
+Data Quality Checker driver module.
+Orchestrates ROUGE and BLEU metrics computation.
 Uses Hugging Face evaluate library for metric computation.
 """
 
 from typing import List, Dict, Union, Optional
-import warnings
 import numpy as np
 
 try:
-    import evaluate
-    EVALUATE_AVAILABLE = True
+    from .rouge import ROUGECalculator, ROUGEAggregator
+    from .bleu import BLEUCalculator, BLEUAggregator
 except ImportError:
-    EVALUATE_AVAILABLE = False
-    warnings.warn("Hugging Face evaluate library not installed. Install with: pip install evaluate")
+    # Fallback for direct imports
+    from rouge import ROUGECalculator, ROUGEAggregator
+    from bleu import BLEUCalculator, BLEUAggregator
 
 
 class DataQualityChecker:
     """
     Comprehensive data quality checker supporting ROUGE and BLEU metrics.
+    
+    This is a driver class that orchestrates metric computation by delegating to:
+    - ROUGECalculator: Handles ROUGE-1, ROUGE-2, ROUGE-L, ROUGE-S metrics
+    - BLEUCalculator: Handles BLEU (Bilingual Evaluation Understudy) metric
     
     Metrics:
     - ROUGE-1: Unigram overlap
@@ -28,15 +33,11 @@ class DataQualityChecker:
     """
     
     def __init__(self):
-        """Initialize the data quality checker with metrics."""
-        if not EVALUATE_AVAILABLE:
-            raise ImportError(
-                "This module requires the 'evaluate' library. "
-                "Install it with: pip install evaluate"
-            )
-        
-        self.rouge = evaluate.load('rouge')
-        self.bleu = evaluate.load('bleu')
+        """Initialize the data quality checker with metric calculators."""
+        self.rouge_calculator = ROUGECalculator()
+        self.bleu_calculator = BLEUCalculator()
+        self.rouge_aggregator = ROUGEAggregator()
+        self.bleu_aggregator = BLEUAggregator()
         self.metrics_cache = {}
     
     def compute_rouge(
@@ -49,6 +50,8 @@ class DataQualityChecker:
     ) -> Dict[str, float]:
         """
         Compute ROUGE metrics (ROUGE-1, ROUGE-2, ROUGE-L, ROUGE-S).
+        
+        Delegates to ROUGECalculator.compute_rouge().
         
         Args:
             predictions: Model predictions (list of strings or single string)
@@ -67,25 +70,9 @@ class DataQualityChecker:
             ...     references="A cat was sitting on the mat"
             ... )
         """
-        if rouge_types is None:
-            rouge_types = ['rouge1', 'rouge2', 'rougeL', 'rougeS']
-        
-        # Normalize inputs to lists
-        if isinstance(predictions, str):
-            predictions = [predictions]
-        if isinstance(references, str):
-            references = [references]
-        
-        # Compute ROUGE
-        results = self.rouge.compute(
-            predictions=predictions,
-            references=references,
-            rouge_types=rouge_types,
-            use_stemmer=use_stemmer,
-            use_aggregator=use_aggregator
+        return self.rouge_calculator.compute_rouge(
+            predictions, references, rouge_types, use_stemmer, use_aggregator
         )
-        
-        return results
     
     def compute_bleu(
         self,
@@ -96,6 +83,8 @@ class DataQualityChecker:
     ) -> Dict[str, float]:
         """
         Compute BLEU score.
+        
+        Delegates to BLEUCalculator.compute_bleu().
         
         Args:
             predictions: Model predictions (list of strings or single string)
@@ -115,24 +104,7 @@ class DataQualityChecker:
             ...     references=["a cat was sitting on the mat"]
             ... )
         """
-        # Normalize inputs
-        if isinstance(predictions, str):
-            predictions = [predictions]
-        
-        # Normalize references structure
-        if isinstance(references, list) and len(references) > 0:
-            if isinstance(references[0], str):
-                # Convert single references to list of lists
-                references = [[ref] for ref in references]
-        
-        results = self.bleu.compute(
-            predictions=predictions,
-            references=references,
-            max_order=max_order,
-            smooth=smooth
-        )
-        
-        return results
+        return self.bleu_calculator.compute_bleu(predictions, references, max_order, smooth)
     
     def compute_all_metrics(
         self,
@@ -210,14 +182,12 @@ class DataQualityChecker:
         return results
     
     def get_rouge_score_explanation(self, rouge_type: str) -> str:
-        """Get explanation of ROUGE metric types."""
-        explanations = {
-            'rouge1': 'ROUGE-1: Overlap of unigrams (single words)',
-            'rouge2': 'ROUGE-2: Overlap of bigrams (consecutive word pairs)',
-            'rougeL': 'ROUGE-L: Longest common subsequence',
-            'rougeS': 'ROUGE-S: Skip-bigram (non-consecutive word pairs)'
-        }
-        return explanations.get(rouge_type, f'Unknown ROUGE type: {rouge_type}')
+        """
+        Get explanation of ROUGE metric types.
+        
+        Delegates to ROUGECalculator.
+        """
+        return self.rouge_calculator.get_rouge_score_explanation(rouge_type)
     
     def format_results(
         self,
@@ -251,15 +221,26 @@ class DataQualityChecker:
 
 
 class QualityMetricsAggregator:
-    """Aggregate quality metrics across multiple samples."""
+    """
+    Aggregate quality metrics across multiple samples.
     
-    @staticmethod
+    This class combines ROUGE and BLEU aggregation capabilities.
+    """
+    
+    def __init__(self):
+        """Initialize the aggregator with individual aggregators."""
+        self.rouge_aggregator = ROUGEAggregator()
+        self.bleu_aggregator = BLEUAggregator()
+    
     def aggregate_rouge_scores(
+        self,
         scores_list: List[Dict[str, float]],
         aggregation_type: str = 'mean'
     ) -> Dict[str, float]:
         """
         Aggregate ROUGE scores across samples.
+        
+        Delegates to ROUGEAggregator.
         
         Args:
             scores_list: List of ROUGE score dictionaries
@@ -268,38 +249,17 @@ class QualityMetricsAggregator:
         Returns:
             Aggregated scores
         """
-        if not scores_list:
-            return {}
-        
-        aggregated = {}
-        
-        # Get all unique keys
-        all_keys = set()
-        for scores in scores_list:
-            all_keys.update(scores.keys())
-        
-        for key in all_keys:
-            values = [s[key] for s in scores_list if key in s and isinstance(s[key], (int, float))]
-            
-            if values:
-                if aggregation_type == 'mean':
-                    aggregated[key] = np.mean(values)
-                elif aggregation_type == 'median':
-                    aggregated[key] = np.median(values)
-                elif aggregation_type == 'min':
-                    aggregated[key] = np.min(values)
-                elif aggregation_type == 'max':
-                    aggregated[key] = np.max(values)
-        
-        return aggregated
+        return self.rouge_aggregator.aggregate_rouge_scores(scores_list, aggregation_type)
     
-    @staticmethod
     def aggregate_bleu_scores(
+        self,
         scores_list: List[Dict[str, float]],
         aggregation_type: str = 'mean'
     ) -> Dict[str, float]:
         """
         Aggregate BLEU scores across samples.
+        
+        Delegates to BLEUAggregator.
         
         Args:
             scores_list: List of BLEU score dictionaries
@@ -308,33 +268,4 @@ class QualityMetricsAggregator:
         Returns:
             Aggregated scores
         """
-        if not scores_list:
-            return {}
-        
-        aggregated = {}
-        
-        # Get all unique keys
-        all_keys = set()
-        for scores in scores_list:
-            all_keys.update(scores.keys())
-        
-        for key in all_keys:
-            # Handle both float and list values
-            values = []
-            for s in scores_list:
-                if key in s:
-                    val = s[key]
-                    if isinstance(val, (int, float)):
-                        values.append(float(val))
-            
-            if values:
-                if aggregation_type == 'mean':
-                    aggregated[key] = np.mean(values)
-                elif aggregation_type == 'median':
-                    aggregated[key] = np.median(values)
-                elif aggregation_type == 'min':
-                    aggregated[key] = np.min(values)
-                elif aggregation_type == 'max':
-                    aggregated[key] = np.max(values)
-        
-        return aggregated
+        return self.bleu_aggregator.aggregate_bleu_scores(scores_list, aggregation_type)

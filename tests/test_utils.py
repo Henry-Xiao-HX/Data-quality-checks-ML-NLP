@@ -4,7 +4,10 @@ Unit tests for utility functions.
 
 import unittest
 import sys
-sys.path.insert(0, '../src')
+from pathlib import Path
+
+# Add src to path
+sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
 
 from utils import (
     preprocess_text,

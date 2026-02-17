@@ -4,7 +4,10 @@ Unit tests for data quality checker module.
 
 import unittest
 import sys
-sys.path.insert(0, '../src')
+from pathlib import Path
+
+# Add src to path for direct imports
+sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
 
 from data_quality_checker import DataQualityChecker, QualityMetricsAggregator
 

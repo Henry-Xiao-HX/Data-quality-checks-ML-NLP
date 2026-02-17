@@ -1,15 +1,32 @@
 # Data Quality Checks for ML/NLP
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Comprehensive data quality checker for ML/NLP models with support for ROUGE and BLEU metrics using the Hugging Face evaluate library.
+
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Basic Usage](#basic-usage)
+- [API Documentation](#api-documentation)
+- [Advanced Usage](#advanced-usage)
+- [Project Structure](#project-structure)
+- [Development](#development)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Features
 
-- **ROUGE Metrics**: ROUGE-1, ROUGE-2, ROUGE-L, and ROUGE-S
-- **BLEU Score**: Bilingual Evaluation Understudy metric
-- **Batch Processing**: Compute metrics across multiple samples efficiently
+- **ROUGE Metrics**: ROUGE-1, ROUGE-2, ROUGE-L, and ROUGE-S for text summarization evaluation
+- **BLEU Score**: Bilingual Evaluation Understudy metric for machine translation and text generation
+- **Batch Processing**: Efficiently compute metrics across multiple samples
 - **Metrics Aggregation**: Support for mean, median, min, and max aggregation
 - **Quality Issue Detection**: Identify common data quality problems
-- **Text Preprocessing**: Built-in utilities for text normalization
+- **Text Preprocessing**: Built-in utilities for text normalization and tokenization
+- **Flexible Evaluation**: Multi-reference support, customizable preprocessing, and stemming options
 - **Comprehensive Testing**: Unit tests with high code coverage
 
 ## Installation
@@ -245,88 +262,173 @@ Run specific test class:
 python -m unittest test_data_quality_checker.TestDataQualityChecker
 ```
 
-## Use Cases
 
-1. **Model Evaluation**: Evaluate NLP model outputs against reference texts
-2. **Data Quality Monitoring**: Detect issues in generated text data
-3. **Summarization Quality**: Assess abstractive summarization quality
-4. **Machine Translation**: Evaluate translation quality
-5. **Batch Processing**: Efficiently compute metrics across large datasets
-6. **Quality Metrics Dashboards**: Create monitoring dashboards with aggregated metrics
 
-## Architecture
+## Advanced Usage
+
+### Multi-Reference Evaluation
+
+When you have multiple valid references per prediction:
+
+```python
+checker = DataQualityChecker()
+
+# One prediction, multiple references
+prediction = "the cat is on the mat"
+references = ["a cat is on the mat", "the feline is on the rug"]
+
+# BLEU handles multiple references well
+scores = checker.compute_bleu([prediction], [[r for r in references]])
+```
+
+### Domain-Specific Evaluation
+
+Customize for specific domains:
+
+```python
+from src.utils import preprocess_text
+from src.data_quality_checker import DataQualityChecker
+
+checker = DataQualityChecker()
+
+def preprocess_medical(text):
+    return preprocess_text(text, lowercase=True, remove_punctuation=False)
+
+medical_pred = "The patient's symptoms include HIGH FEVER and COUGH"
+medical_ref = "patient symptoms: high fever, cough"
+
+pred_clean = preprocess_medical(medical_pred)
+ref_clean = preprocess_medical(medical_ref)
+
+scores = checker.compute_rouge(pred_clean, ref_clean, use_stemmer=True)
+```
+
+See README for more advanced examples: quality filtering pipelines, confidence scoring, statistical analysis, tracking trends over time, and comparative model evaluation.
+
+## Project Structure
 
 ```
 Data-quality-checks-ML-NLP/
 ├── src/
-│   ├── __init__.py
-│   ├── data_quality_checker.py    # Main checker classes
-│   └── utils.py                    # Utility functions
+│   ├── __init__.py                    # Package exports
+│   ├── data_quality_checker.py        # Main driver/orchestrator
+│   ├── rouge.py                       # ROUGE metrics
+│   ├── bleu.py                        # BLEU metrics
+│   └── utils.py                       # Utility functions
+│
+├── scripts/                           # Bash orchestration scripts
+│   ├── install.sh                     # Install dependencies
+│   ├── install-dev.sh                 # Install dev dependencies
+│   ├── test.sh                        # Run tests with coverage
+│   ├── lint.sh                        # Lint code
+│   ├── format.sh                      # Format code
+│   ├── clean.sh                       # Clean build files
+│   ├── run-examples.sh                # Run all examples
+│   └── help.sh                        # Show help
+│
 ├── examples/
 │   ├── example_1_basic_usage.py
 │   ├── example_2_batch_aggregation.py
 │   └── example_3_quality_detection.py
+│
 ├── tests/
 │   ├── test_data_quality_checker.py
 │   └── test_utils.py
-├── requirements.txt
-└── README.md
+│
+├── orchestrate.sh                     # Master orchestration script
+├── README.md                          # This file
+├── LICENSE                            # MIT License
+└── requirements.txt                   # Dependencies
 ```
 
-## Performance Considerations
+## Development
 
-- **Batch Processing**: Use `batch_compute_metrics()` for large datasets
-- **Caching**: Results are cached internally by the evaluate library
-- **Stemming**: Use `use_stemmer=True` for more lenient matching but slower computation
-- **Memory**: ROUGE and BLEU computations are memory-efficient for typical datasets
+All commands available through bash scripts or orchestration:
+
+```bash
+# Installation and setup
+bash orchestrate.sh install              # Install dependencies
+bash orchestrate.sh install-dev          # Install dev tools
+bash orchestrate.sh setup-dev            # Full dev environment
+
+# Testing
+bash orchestrate.sh test                 # Run tests with coverage
+bash orchestrate.sh quick-test           # Run tests without coverage
+bash orchestrate.sh test-specific FILE   # Run specific test
+
+# Code quality
+bash orchestrate.sh lint                 # Lint code
+bash orchestrate.sh format               # Format code
+bash orchestrate.sh clean                # Clean build files
+
+# Examples
+bash orchestrate.sh run-examples         # Run all examples
+bash orchestrate.sh run-example FILE     # Run specific example
+```
 
 ## Troubleshooting
 
 ### Import Error: "evaluate not found"
+
+**Solution:** Install the evaluate library
 ```bash
 pip install evaluate
 ```
 
 ### ROUGE scores are all 0
-This usually means there's no overlap between predictions and references. Check:
-1. Text preprocessing (case sensitivity, punctuation)
-2. Tokenization differences
-3. Language or domain differences
+
+This means there's no overlap between predictions and references. Check:
+1. **Case sensitivity**: Use `lowercase=True` when creating checker
+2. **Punctuation**: Remove punctuation with preprocessing utilities
+3. **Tokenization differences**: Verify that text is properly tokenized
+4. **Language mismatch**: Ensure predictions and references are in same language
 
 ### BLEU score is very low
+
 BLEU is sensitive to word order. Common reasons:
-1. Different word ordering (use n-gram metrics for position-independent scores)
-2. Paraphrasing (consider using ROUGE-L)
-3. Multiple valid references help (provide multiple references if available)
+1. **Different word ordering**: Consider using ROUGE-L for order-independent match
+2. **Paraphrasing**: Different wording of same content reduces BLEU
+3. **Multiple valid references**: Provide multiple reference variations
+
+### Memory issues with large datasets
+
+**Solution:** Use batch processing with `batch_compute_metrics()`
 
 ## Contributing
 
 Contributions are welcome! Areas for improvement:
 
-- Additional metrics (e.g., METEOR, CIDEr)
-- GPU support for faster computation
-- Integration with other evaluation frameworks
-- Performance optimizations
+- Additional metrics (METEOR, CIDEr, BERTScore)
+- GPU acceleration
+- Multi-language support
+- Visualization utilities
+- MLOps platform integration
+
+**Contribution Process:**
+1. Fork the repository
+2. Create a feature branch
+3. Make changes with tests
+4. Run `bash orchestrate.sh format` and `bash orchestrate.sh lint`
+5. Submit a pull request
 
 ## License
 
-See LICENSE file for details.
+MIT License - See [LICENSE](LICENSE) file for details
 
 ## References
 
-- Hugging Face Evaluate: https://huggingface.co/docs/evaluate/
-- ROUGE: https://aclanthology.org/W04-1013/
-- BLEU: https://aclanthology.org/P02-1040/
-- ROUGE Implementation: https://github.com/google-research/rouge
+- [ROUGE: A Package for Automatic Evaluation of Summarization](https://aclanthology.org/W04-1013/)
+- [BLEU: a Method for Automatic Evaluation of Machine Translation](https://aclanthology.org/P02-1040/)
+- [Hugging Face Evaluate Library](https://huggingface.co/docs/evaluate/)
 
 ## Citation
 
 If you use this library, please cite:
 
 ```bibtex
-@software{data_quality_checks_ml_nlp,
+@software{dq_checks_ml_nlp,
   title={Data Quality Checks for ML/NLP},
-  author={Your Name},
+  author={Xiao, Henry},
   year={2026},
   url={https://github.com/yourusername/Data-quality-checks-ML-NLP}
 }
@@ -334,4 +436,13 @@ If you use this library, please cite:
 
 ## Support
 
-For issues, questions, or suggestions, please open an issue on the GitHub repository.
+For issues, questions, or suggestions:
+- Open an issue on GitHub
+- Check the `examples/` directory
+- Review the advanced usage patterns in this README
+
+---
+
+**Version:** 0.1.0  
+**Last Updated:** February 2026  
+**Maintained by:** Henry Xiao
