@@ -2,447 +2,213 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Comprehensive data quality checker for ML/NLP models with support for ROUGE and BLEU metrics using the Hugging Face evaluate library.
-
-## Table of Contents
-
-- [Features](#features)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Basic Usage](#basic-usage)
-- [API Documentation](#api-documentation)
-- [Advanced Usage](#advanced-usage)
-- [Project Structure](#project-structure)
-- [Development](#development)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Features
-
-- **ROUGE Metrics**: ROUGE-1, ROUGE-2, ROUGE-L, and ROUGE-S for text summarization evaluation
-- **BLEU Score**: Bilingual Evaluation Understudy metric for machine translation and text generation
-- **Batch Processing**: Efficiently compute metrics across multiple samples
-- **Metrics Aggregation**: Support for mean, median, min, and max aggregation
-- **Quality Issue Detection**: Identify common data quality problems
-- **Text Preprocessing**: Built-in utilities for text normalization and tokenization
-- **Flexible Evaluation**: Multi-reference support, customizable preprocessing, and stemming options
-- **Comprehensive Testing**: Unit tests with high code coverage
-
-## Installation
-
-### Prerequisites
-- Python 3.8+
-- pip or conda
-
-### Setup
-
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd Data-quality-checks-ML-NLP
-```
-
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-This will install:
-- `evaluate`: Hugging Face's evaluation library for metrics
-- `numpy`: For numerical operations
-- `scikit-learn`: For additional utilities
-
-## Quick Start
-
-### Basic Usage
-
-```python
-from src.data_quality_checker import DataQualityChecker
-
-# Initialize the checker
-checker = DataQualityChecker()
-
-# Compute ROUGE metrics
-rouge_scores = checker.compute_rouge(
-    predictions="The quick brown fox jumps",
-    references="A quick brown fox jumps"
-)
-
-# Compute BLEU score
-bleu_scores = checker.compute_bleu(
-    predictions=["the cat sat"],
-    references=["a cat sat"]
-)
-
-# Compute all metrics
-all_metrics = checker.compute_all_metrics(
-    predictions="Machine learning is powerful",
-    references="ML is very powerful"
-)
-```
-
-### Supported Metrics
-
-#### ROUGE (Recall-Oriented Understudy for Gisting Evaluation)
-
-- **ROUGE-1**: Unigram overlap between prediction and reference
-- **ROUGE-2**: Bigram overlap
-- **ROUGE-L**: Longest common subsequence
-- **ROUGE-S**: Skip-bigram overlap (non-consecutive bigrams)
-
-#### BLEU (Bilingual Evaluation Understudy)
-
-- Measures n-gram precision between prediction and reference
-- Includes brevity penalty for shorter predictions
-- Scores range from 0 to 1
-
-### Examples
-
-Run the provided examples:
-
-```bash
-python examples/example_1_basic_usage.py
-python examples/example_2_batch_aggregation.py
-python examples/example_3_quality_detection.py
-```
-
-## API Documentation
-
-### DataQualityChecker
-
-Main class for computing quality metrics.
-
-#### Methods
-
-##### `compute_rouge(predictions, references, rouge_types=None, use_stemmer=False, use_aggregator=True)`
-
-Compute ROUGE metrics.
-
-**Parameters:**
-- `predictions` (str or List[str]): Model predictions
-- `references` (str or List[str]): Reference texts
-- `rouge_types` (List[str], optional): Types of ROUGE to compute. Defaults to all
-- `use_stemmer` (bool): Whether to use stemmer (default: False)
-- `use_aggregator` (bool): Whether to aggregate scores (default: True)
-
-**Returns:** Dictionary with ROUGE scores
-
-**Example:**
-```python
-scores = checker.compute_rouge(
-    predictions="The cat sat on the mat",
-    references="A cat was sitting on the mat"
-)
-print(scores)  # {'rouge1': 0.67, 'rouge2': 0.33, 'rougeL': 0.67, 'rougeS': 0.33}
-```
-
-##### `compute_bleu(predictions, references, max_order=4, smooth=False)`
-
-Compute BLEU score.
-
-**Parameters:**
-- `predictions` (str or List[str]): Model predictions
-- `references` (List[List[str]] or List[str]): Reference texts
-- `max_order` (int): Maximum n-gram order (default: 4)
-- `smooth` (bool): Whether to apply smoothing (default: False)
-
-**Returns:** Dictionary with BLEU score
-
-**Example:**
-```python
-scores = checker.compute_bleu(
-    predictions=["the cat sat"],
-    references=["a cat sat"]
-)
-print(scores)  # {'bleu': 0.75, 'precisions': [...], ...}
-```
-
-##### `compute_all_metrics(predictions, references, compute_rouge=True, compute_bleu=True, ...)`
-
-Compute all supported metrics at once.
-
-**Returns:** Dictionary with all metrics
-
-### QualityMetricsAggregator
-
-Aggregate metrics across multiple samples.
-
-#### Methods
-
-##### `aggregate_rouge_scores(scores_list, aggregation_type='mean')`
-
-Aggregate ROUGE scores.
-
-**Parameters:**
-- `scores_list` (List[Dict]): List of ROUGE score dictionaries
-- `aggregation_type` (str): 'mean', 'median', 'min', or 'max'
-
-**Returns:** Aggregated scores
-
-##### `aggregate_bleu_scores(scores_list, aggregation_type='mean')`
-
-Aggregate BLEU scores.
-
-Same parameters and returns as `aggregate_rouge_scores`.
-
-### Utility Functions
-
-#### `preprocess_text(text, lowercase=True, remove_punctuation=False)`
-
-Preprocess text for quality checks.
-
-```python
-from src.utils import preprocess_text
-
-cleaned = preprocess_text("HELLO, World!", lowercase=True, remove_punctuation=True)
-# Output: "hello world"
-```
-
-#### `detect_data_quality_issues(predictions, references, ...)`
-
-Detect common data quality problems.
-
-```python
-from src.utils import detect_data_quality_issues
-
-issues = detect_data_quality_issues(predictions, references)
-# Returns: {
-#     'empty_predictions': [...],
-#     'very_short_predictions': [...],
-#     'duplicate_predictions': [...],
-#     ...
-# }
-```
-
-#### `calculate_precision_recall_f1(predictions, references)`
-
-Calculate token-level overlap metrics.
-
-```python
-from src.utils import calculate_precision_recall_f1
-
-metrics = calculate_precision_recall_f1(predictions, references)
-# Returns: {'precision': 0.8, 'recall': 0.75, 'f1': 0.77}
-```
-
-#### `calculate_length_similarity(predictions, references)`
-
-Calculate text length similarity metrics.
-
-```python
-from src.utils import calculate_length_similarity
-
-metrics = calculate_length_similarity(predictions, references)
-# Returns: {
-#     'avg_pred_length': 12.5,
-#     'avg_ref_length': 15.0,
-#     'length_ratio': 0.833
-# }
-```
-
-## Running Tests
-
-Run all unit tests:
-
-```bash
-cd tests
-python -m unittest discover -s . -p "test_*.py"
-```
-
-Run specific test file:
-
-```bash
-python -m unittest test_data_quality_checker.py
-```
-
-Run specific test class:
-
-```bash
-python -m unittest test_data_quality_checker.TestDataQualityChecker
-```
-
-
-
-## Advanced Usage
-
-### Multi-Reference Evaluation
-
-When you have multiple valid references per prediction:
-
-```python
-checker = DataQualityChecker()
-
-# One prediction, multiple references
-prediction = "the cat is on the mat"
-references = ["a cat is on the mat", "the feline is on the rug"]
-
-# BLEU handles multiple references well
-scores = checker.compute_bleu([prediction], [[r for r in references]])
-```
-
-### Domain-Specific Evaluation
-
-Customize for specific domains:
-
-```python
-from src.utils import preprocess_text
-from src.data_quality_checker import DataQualityChecker
-
-checker = DataQualityChecker()
-
-def preprocess_medical(text):
-    return preprocess_text(text, lowercase=True, remove_punctuation=False)
-
-medical_pred = "The patient's symptoms include HIGH FEVER and COUGH"
-medical_ref = "patient symptoms: high fever, cough"
-
-pred_clean = preprocess_medical(medical_pred)
-ref_clean = preprocess_medical(medical_ref)
-
-scores = checker.compute_rouge(pred_clean, ref_clean, use_stemmer=True)
-```
-
-See README for more advanced examples: quality filtering pipelines, confidence scoring, statistical analysis, tracking trends over time, and comparative model evaluation.
+Multi-task data quality checker for binary classification, regression, and generative AI models. Supports ROUGE/BLEU metrics (text), classification metrics (precision/recall/F1), and regression metrics (MAE/MSE/RMSE/R²).
 
 ## Project Structure
 
 ```
-Data-quality-checks-ML-NLP/
-├── src/
-│   ├── __init__.py                    # Package exports
-│   ├── data_quality_checker.py        # Main driver/orchestrator
-│   ├── rouge.py                       # ROUGE metrics
-│   ├── bleu.py                        # BLEU metrics
-│   └── utils.py                       # Utility functions
-│
-├── scripts/                           # Bash orchestration scripts
-│   ├── install.sh                     # Install dependencies
-│   ├── install-dev.sh                 # Install dev dependencies
-│   ├── test.sh                        # Run tests with coverage
-│   ├── lint.sh                        # Lint code
-│   ├── format.sh                      # Format code
-│   ├── clean.sh                       # Clean build files
-│   ├── run-examples.sh                # Run all examples
-│   └── help.sh                        # Show help
-│
-├── examples/
-│   ├── example_1_basic_usage.py
-│   ├── example_2_batch_aggregation.py
-│   └── example_3_quality_detection.py
-│
-├── tests/
-│   ├── test_data_quality_checker.py
-│   └── test_utils.py
-│
-├── orchestrate.sh                     # Master orchestration script
-├── README.md                          # This file
-├── LICENSE                            # MIT License
-└── requirements.txt                   # Dependencies
+src/
+├── data_quality_checker.py           # Text metrics (ROUGE, BLEU)
+├── unified_quality_checker.py        # Multi-task orchestrator
+├── utils.py                          # Utility functions
+├── binary_classification/
+│   ├── binary_classifier_checker.py  # Classification metrics
+│   └── metrics.py                    # Helper functions
+└── regression/
+    ├── regression_checker.py         # Regression metrics
+    └── metrics.py                    # Helper functions
+
+tests/
+├── conftest.py                       # Pytest fixtures
+├── test_data_quality_checker.py
+└── test_utils.py
+
+examples/
+├── example_1_basic_usage.py
+├── example_2_batch_aggregation.py
+├── example_3_quality_detection.py
+├── example_4_binary_classification.py
+├── example_5_regression.py
+└── example_6_unified_quality_checker.py
 ```
 
-## Development
-
-All commands available through bash scripts or orchestration:
+## Installation
 
 ```bash
-# Installation and setup
-bash orchestrate.sh install              # Install dependencies
-bash orchestrate.sh install-dev          # Install dev tools
-bash orchestrate.sh setup-dev            # Full dev environment
+git clone <repository-url>
+cd Data-quality-checks-ML-NLP
+pip install -r requirements.txt
+```
+
+**Requirements:** Python 3.8+, evaluate, numpy, scikit-learn
+
+## Quick Start
+
+### Text Generation (ROUGE/BLEU)
+```python
+from src.data_quality_checker import DataQualityChecker
+
+checker = DataQualityChecker()
+rouge = checker.compute_rouge("The quick brown fox", "A quick brown fox")
+bleu = checker.compute_bleu(["the cat sat"], [["a cat sat"]])
+```
+
+### Binary Classification
+```python
+from src.binary_classification.binary_classifier_checker import BinaryClassifierChecker
+
+checker = BinaryClassifierChecker()
+metrics = checker.compute_metrics([0, 1, 1, 0], [0, 1, 0, 0])
+# Returns: precision, recall, f1, accuracy
+```
+
+### Regression
+```python
+from src.regression.regression_checker import RegressionChecker
+
+checker = RegressionChecker()
+metrics = checker.compute_metrics([2.1, 3.9, 5.8], [2.0, 4.0, 6.0])
+# Returns: mae, mse, rmse, r2, mape
+```
+
+### Unified Checker
+```python
+from src.unified_quality_checker import UnifiedQualityChecker
+
+checker = UnifiedQualityChecker()
+report = checker.check_quality(predictions, references, task_type='classification')
+```
+
+## Testing
+
+### Run All Tests
+```bash
+# With coverage
+python -m pytest tests/ --cov=src
+
+# Without coverage  
+python -m pytest tests/ -v
+
+# Using manage.sh
+bash manage.sh test              # With coverage
+bash manage.sh test-quick        # Without coverage
+```
+
+### Run Specific Tests
+```bash
+python -m pytest tests/test_data_quality_checker.py -v
+python -m pytest tests/test_data_quality_checker.py::TestDataQualityChecker::test_compute_rouge -v
+python -m unittest tests.test_data_quality_checker
+```
+
+### Run Examples
+```bash
+python examples/example_1_basic_usage.py
+python examples/example_2_batch_aggregation.py
+python examples/example_3_quality_detection.py
+python examples/example_4_binary_classification.py
+python examples/example_5_regression.py
+python examples/example_6_unified_quality_checker.py
+
+# Or all at once
+python run_examples.py
+```
+
+## API Reference
+
+### `src.data_quality_checker.DataQualityChecker`
+
+**Methods:**
+
+| Method | Parameters | Returns |
+|--------|-----------|---------|
+| `compute_rouge(predictions, references, rouge_types=None, use_stemmer=False, use_aggregator=True)` | predictions: str/List[str], references: str/List[str], rouge_types: List[str] | Dict with rouge1, rouge2, rougeL, rougeS scores |
+| `compute_bleu(predictions, references, max_order=4, smooth=False)` | predictions: str/List[str], references: List[List[str]]/List[str], max_order: int, smooth: bool | Dict with bleu, precisions, brevity_penalty |
+| `compute_all_metrics(predictions, references, compute_rouge=True, compute_bleu=True)` | Same as above | Dict combining all metrics |
+| `batch_compute_metrics(predictions_list, references_list, aggregation_type='mean')` | predictions_list: List, references_list: List, aggregation_type: str | Aggregated metrics |
+
+### `src.binary_classification.binary_classifier_checker.BinaryClassifierChecker`
+
+**Methods:**
+
+| Method | Parameters | Returns |
+|--------|-----------|---------|
+| `compute_metrics(predictions, references, threshold=0.5)` | predictions: List[int/float], references: List[int], threshold: float | Dict with precision, recall, f1, accuracy, specificity, sensitivity |
+| `threshold_analysis(prediction_probs, references)` | prediction_probs: List[float], references: List[int] | Dict with optimal threshold and metrics for different thresholds |
+| `detect_data_imbalance(references)` | references: List[int] | Dict with class distribution and imbalance ratio |
+| `detect_quality_issues(predictions, references)` | predictions: List, references: List | Dict with issue locations and types |
+
+### `src.regression.regression_checker.RegressionChecker`
+
+**Methods:**
+
+| Method | Parameters | Returns |
+|--------|-----------|---------|
+| `compute_metrics(predictions, references)` | predictions: List[float], references: List[float] | Dict with mae, mse, rmse, r2, mape |
+| `residual_analysis(predictions, references)` | predictions: List[float], references: List[float] | Dict with residuals, mean_residual, std_residual |
+| `outlier_detection(predictions, references, threshold=2.0)` | predictions: List[float], references: List[float], threshold: float | Dict with outlier indices and values |
+| `correlation_analysis(inputs, predictions)` | inputs: List[List[float]], predictions: List[float] | Correlation coefficients |
+
+### `src.unified_quality_checker.UnifiedQualityChecker`
+
+**Methods:**
+
+| Method | Parameters | Returns |
+|--------|-----------|---------|
+| `check_quality(predictions, references, task_type)` | predictions: List, references: List, task_type: str ('classification'/'regression'/'text_generation') | Comprehensive quality report |
+
+### `src.utils`
+
+**Functions:**
+
+| Function | Parameters | Returns |
+|----------|-----------|---------|
+| `preprocess_text(text, lowercase=True, remove_punctuation=False)` | text: str, lowercase: bool, remove_punctuation: bool | Preprocessed str |
+| `detect_data_quality_issues(predictions, references)` | predictions: List, references: List | Dict with empty, short, duplicate, mismatch issues |
+| `calculate_precision_recall_f1(predictions, references)` | predictions: List[str], references: List[str] | Dict with precision, recall, f1 |
+| `calculate_length_similarity(predictions, references)` | predictions: List[str], references: List[str] | Dict with avg lengths and ratio |
+
+
+## Development Commands
+
+```bash
+# Setup
+bash manage.sh install               # Install dependencies
+bash manage.sh dev-install           # Install in dev mode
+bash manage.sh setup-dev             # Full setup (clean, install, lint, format, test)
 
 # Testing
-bash orchestrate.sh test                 # Run tests with coverage
-bash orchestrate.sh quick-test           # Run tests without coverage
-bash orchestrate.sh test-specific FILE   # Run specific test
+bash manage.sh test                  # Run tests with coverage
+bash manage.sh test-quick            # Run tests without coverage
 
-# Code quality
-bash orchestrate.sh lint                 # Lint code
-bash orchestrate.sh format               # Format code
-bash orchestrate.sh clean                # Clean build files
+# Code Quality
+bash manage.sh lint                  # Run linter
+bash manage.sh format                # Format code
+bash manage.sh clean                 # Clean build artifacts
 
 # Examples
-bash orchestrate.sh run-examples         # Run all examples
-bash orchestrate.sh run-example FILE     # Run specific example
+bash manage.sh examples              # Run all examples
 ```
 
 ## Troubleshooting
 
-### Import Error: "evaluate not found"
-
-**Solution:** Install the evaluate library
-```bash
-pip install evaluate
-```
-
-### ROUGE scores are all 0
-
-This means there's no overlap between predictions and references. Check:
-1. **Case sensitivity**: Use `lowercase=True` when creating checker
-2. **Punctuation**: Remove punctuation with preprocessing utilities
-3. **Tokenization differences**: Verify that text is properly tokenized
-4. **Language mismatch**: Ensure predictions and references are in same language
-
-### BLEU score is very low
-
-BLEU is sensitive to word order. Common reasons:
-1. **Different word ordering**: Consider using ROUGE-L for order-independent match
-2. **Paraphrasing**: Different wording of same content reduces BLEU
-3. **Multiple valid references**: Provide multiple reference variations
-
-### Memory issues with large datasets
-
-**Solution:** Use batch processing with `batch_compute_metrics()`
-
-## Contributing
-
-Contributions are welcome! Areas for improvement:
-
-- Additional metrics (METEOR, CIDEr, BERTScore)
-- GPU acceleration
-- Multi-language support
-- Visualization utilities
-- MLOps platform integration
-
-**Contribution Process:**
-1. Fork the repository
-2. Create a feature branch
-3. Make changes with tests
-4. Run `bash orchestrate.sh format` and `bash orchestrate.sh lint`
-5. Submit a pull request
-
-## License
-
-MIT License - See [LICENSE](LICENSE) file for details
+| Issue | Solution |
+|-------|----------|
+| `ImportError: evaluate` | `pip install evaluate` |
+| ROUGE scores are 0 | Check case sensitivity, punctuation, tokenization, language match |
+| BLEU score too low | Try ROUGE-L (order-independent), provide multiple references |
+| Memory errors | Use batch processing with `batch_compute_metrics()` |
 
 ## References
 
-- [ROUGE: A Package for Automatic Evaluation of Summarization](https://aclanthology.org/W04-1013/)
-- [BLEU: a Method for Automatic Evaluation of Machine Translation](https://aclanthology.org/P02-1040/)
-- [Hugging Face Evaluate Library](https://huggingface.co/docs/evaluate/)
+- [ROUGE Metric](https://aclanthology.org/W04-1013/)
+- [BLEU Score](https://aclanthology.org/P02-1040/)
+- [Hugging Face Evaluate](https://huggingface.co/docs/evaluate/)
 
-## Citation
+## License
 
-If you use this library, please cite:
-
-```bibtex
-@software{dq_checks_ml_nlp,
-  title={Data Quality Checks for ML/NLP},
-  author={Xiao, Henry},
-  year={2026},
-  url={https://github.com/yourusername/Data-quality-checks-ML-NLP}
-}
-```
-
-## Support
-
-For issues, questions, or suggestions:
-- Open an issue on GitHub
-- Check the `examples/` directory
-- Review the advanced usage patterns in this README
+MIT - See [LICENSE](LICENSE)
 
 ---
 
-**Version:** 0.1.0  
-**Last Updated:** February 2026  
-**Maintained by:** Henry Xiao
+**Version:** 0.1.0 | **Author:** Henry Xiao
