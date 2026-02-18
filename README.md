@@ -1,8 +1,8 @@
-# Data Quality Checks for ML/NLP
+# Evaluating ML/GenAI Models
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Data quality checker for binary classification, regression, and generative AI models. Supports ROUGE/BLEU metrics (text), binary classification metrics (precision/recall/F1), and regression model metrics (MAE/MSE/RMSE/R²).
+Evaluating binary classification, regression, and generative AI models. Supports ROUGE/BLEU metrics for text generative AI, binary classification metrics (precision/recall/F1), and regression model metrics (MAE/MSE/RMSE/R²). For a more detailed explanation on the different evaluation metrics, read https://henry-xiao-hx.github.io/henry_xiao_blogs/2026/02/17/Evaluating-ML-GenAI-Models.html
 
 ## Project Structure
 
