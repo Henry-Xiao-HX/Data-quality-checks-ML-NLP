@@ -95,8 +95,8 @@ class RegressionMetrics:
         y_true: np.ndarray,
         y_pred: Union[np.ndarray, list],
         sample_weight: Optional[np.ndarray] = None,
-        multioutput: str = 'raw_values',
-    ) -> Union[float, np.ndarray]:
+        multioutput: str = 'uniform_average',
+    ) -> float:
         """
         Compute Root Mean Squared Error (RMSE).
         
@@ -111,7 +111,7 @@ class RegressionMetrics:
             multioutput: Type of averaging for multioutput targets.
         
         Returns:
-            float or array: RMSE score(s) (always non-negative).
+            float: RMSE score (always non-negative).
         """
         y_true = np.array(y_true)
         y_pred = np.array(y_pred)
@@ -119,7 +119,7 @@ class RegressionMetrics:
             y_true, y_pred, sample_weight=sample_weight, multioutput=multioutput
         )
         rmse = np.sqrt(mse)
-        return float(rmse) if isinstance(rmse, np.ndarray) and rmse.shape == () else rmse
+        return float(rmse)
     
     def compute_mae(
         self,
@@ -127,7 +127,7 @@ class RegressionMetrics:
         y_pred: Union[np.ndarray, list],
         sample_weight: Optional[np.ndarray] = None,
         multioutput: str = 'uniform_average',
-    ) -> Union[float, np.ndarray]:
+    ) -> float:
         """
         Compute Mean Absolute Error (MAE).
         
@@ -142,7 +142,7 @@ class RegressionMetrics:
             multioutput: Type of averaging for multioutput targets.
         
         Returns:
-            float or array: MAE score(s) (always non-negative).
+            float: MAE score (always non-negative).
         """
         y_true = np.array(y_true)
         y_pred = np.array(y_pred)
@@ -155,8 +155,8 @@ class RegressionMetrics:
         y_true: np.ndarray,
         y_pred: Union[np.ndarray, list],
         sample_weight: Optional[np.ndarray] = None,
-        multioutput: str = 'raw_values',
-    ) -> Union[float, np.ndarray]:
+        multioutput: str = 'uniform_average',
+    ) -> float:
         """
         Compute Mean Squared Error (MSE).
         
@@ -171,14 +171,14 @@ class RegressionMetrics:
             multioutput: Type of averaging for multioutput targets.
         
         Returns:
-            float or array: MSE score(s) (always non-negative).
+            float: MSE score (always non-negative).
         """
         y_true = np.array(y_true)
         y_pred = np.array(y_pred)
         mse = mean_squared_error(
             y_true, y_pred, sample_weight=sample_weight, multioutput=multioutput
         )
-        return float(mse) if isinstance(mse, np.ndarray) and mse.shape == () else mse
+        return float(mse)
     
     def compute_residuals(
         self,

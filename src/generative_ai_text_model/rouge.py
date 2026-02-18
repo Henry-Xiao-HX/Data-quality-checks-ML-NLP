@@ -24,7 +24,6 @@ class ROUGECalculator:
     - ROUGE-1: Unigram overlap
     - ROUGE-2: Bigram overlap
     - ROUGE-L: Longest common subsequence
-    - ROUGE-S: Skip-bigram overlap
     """
     
     def __init__(self):
@@ -65,7 +64,7 @@ class ROUGECalculator:
             ... )
         """
         if rouge_types is None:
-            rouge_types = ['rouge1', 'rouge2', 'rougeL', 'rougeS']
+            rouge_types = ['rouge1', 'rouge2', 'rougeL']
         
         # Normalize inputs to lists
         if isinstance(predictions, str):
@@ -101,7 +100,7 @@ class ROUGECalculator:
         Returns:
             Dictionary with each ROUGE type and its metrics
         """
-        rouge_types = ['rouge1', 'rouge2', 'rougeL', 'rougeS']
+        rouge_types = ['rouge1', 'rouge2', 'rougeL']
         results = {}
         
         for rouge_type in rouge_types:
@@ -124,8 +123,7 @@ class ROUGECalculator:
         explanations = {
             'rouge1': 'ROUGE-1: Overlap of unigrams (single words)',
             'rouge2': 'ROUGE-2: Overlap of bigrams (consecutive word pairs)',
-            'rougeL': 'ROUGE-L: Longest common subsequence',
-            'rougeS': 'ROUGE-S: Skip-bigram (non-consecutive word pairs)'
+            'rougeL': 'ROUGE-L: Longest common subsequence'
         }
         return explanations.get(rouge_type, f'Unknown ROUGE type: {rouge_type}')
 

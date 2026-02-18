@@ -29,19 +29,10 @@ USAGE:
 
 INSTALLATION:
   install                Install base dependencies
-  install-dev            Install base + dev dependencies  
-  dev-install            Install package in development mode
-  setup-dev              Full dev setup (clean, install, lint, format, test)
 
 TESTING:
-  test                   Run all tests with coverage
   test-quick             Run tests without coverage
   test <file>            Run specific test file
-
-CODE QUALITY:
-  lint                   Run flake8 linter and mypy type checker
-  format                 Format code with black and isort
-  clean                  Clean cache, build, and dist files
 
 EXAMPLES:
   examples               Run all examples
@@ -55,8 +46,6 @@ EXAMPLES:
   bash manage.sh install-dev
   bash manage.sh test
   bash manage.sh test tests/test_utils.py
-  bash manage.sh lint
-  bash manage.sh format
   bash manage.sh examples
   bash manage.sh example example_1_basic_usage
 
@@ -75,57 +64,6 @@ install_base() {
     fi
 }
 
-install_dev() {
-    install_base
-    log_info "Installing development dependencies..."
-    pip install pytest pytest-cov black flake8 mypy isort
-    if [ $? -eq 0 ]; then
-        log_success "Development dependencies installed"
-    else
-        log_error "Failed to install development dependencies"
-        exit 1
-    fi
-}
-
-dev_install() {
-    log_info "Installing package in development mode..."
-    pip install -e ".[dev]"
-    if [ $? -eq 0 ]; then
-        log_success "Package installed in development mode"
-    else
-        log_error "Failed to install package in development mode"
-        exit 1
-    fi
-}
-
-setup_dev() {
-    log_info "Starting full development setup..."
-    log_info "Step 1: Cleaning cache..."
-    do_clean
-    log_info "Step 2: Installing development dependencies..."
-    install_dev
-    log_info "Step 3: Running linter..."
-    do_lint
-    log_info "Step 4: Formatting code..."
-    do_format
-    log_info "Step 5: Running tests..."
-    do_test
-    log_success "Full development setup completed"
-}
-
-# Testing
-do_test() {
-    local test_file="${1:-tests/}"
-    log_info "Running tests with coverage from: $test_file..."
-    python -m pytest "$test_file" -v --cov=src
-    if [ $? -eq 0 ]; then
-        log_success "Tests completed"
-    else
-        log_error "Some tests failed"
-        exit 1
-    fi
-}
-
 do_test_quick() {
     log_info "Running quick tests (no coverage)..."
     python -m pytest tests/ -v
@@ -135,54 +73,6 @@ do_test_quick() {
         log_error "Some tests failed"
         exit 1
     fi
-}
-
-# Code quality
-do_lint() {
-    log_info "Running flake8 linter..."
-    flake8 src/ tests/ examples/
-    if [ $? -ne 0 ]; then
-        log_error "Linting failed"
-        exit 1
-    fi
-    
-    log_info "Running mypy type checker..."
-    mypy src/ --ignore-missing-imports
-    if [ $? -eq 0 ]; then
-        log_success "Linting completed"
-    else
-        log_error "Type checking failed"
-        exit 1
-    fi
-}
-
-do_format() {
-    log_info "Running black code formatter..."
-    black src/ tests/ examples/
-    if [ $? -ne 0 ]; then
-        log_error "Black formatting failed"
-        exit 1
-    fi
-    
-    log_info "Running isort import sorter..."
-    isort src/ tests/ examples/
-    if [ $? -eq 0 ]; then
-        log_success "Code formatting completed"
-    else
-        log_error "Import sorting failed"
-        exit 1
-    fi
-}
-
-do_clean() {
-    log_info "Cleaning Python cache files..."
-    find . -type f -name '*.pyc' -delete
-    find . -type d -name '__pycache__' -delete
-    find . -type d -name '.pytest_cache' -delete
-    find . -type d -name '.mypy_cache' -delete
-    find . -type d -name '*.egg-info' -exec rm -rf {} + 2>/dev/null
-    rm -rf build/ dist/ .coverage htmlcov/
-    log_success "Cleanup completed"
 }
 
 # Examples

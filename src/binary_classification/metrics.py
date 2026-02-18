@@ -64,7 +64,7 @@ class BinaryClassificationMetrics:
         y_true: np.ndarray,
         y_pred: Union[np.ndarray, list],
         pos_label: int = 1,
-        average: Optional[str] = None,
+        average: Optional[str] = 'binary',
     ) -> float:
         """
         Compute True Positive Rate (also known as Recall or Sensitivity).
@@ -75,7 +75,7 @@ class BinaryClassificationMetrics:
             y_true: Ground truth binary labels.
             y_pred: Predicted binary labels.
             pos_label: The positive label class.
-            average: Type of averaging (None for binary classification).
+            average: Type of averaging ('binary' for binary classification).
         
         Returns:
             float: TPR score between 0 and 1.
@@ -89,7 +89,7 @@ class BinaryClassificationMetrics:
         y_true: np.ndarray,
         y_pred: Union[np.ndarray, list],
         pos_label: int = 1,
-        average: Optional[str] = None,
+        average: Optional[str] = 'binary',
     ) -> float:
         """
         Compute Precision.
@@ -100,7 +100,7 @@ class BinaryClassificationMetrics:
             y_true: Ground truth binary labels.
             y_pred: Predicted binary labels.
             pos_label: The positive label class.
-            average: Type of averaging (None for binary classification).
+            average: Type of averaging ('binary' for binary classification).
         
         Returns:
             float: Precision score between 0 and 1.
@@ -114,7 +114,7 @@ class BinaryClassificationMetrics:
         y_true: np.ndarray,
         y_pred: Union[np.ndarray, list],
         pos_label: int = 1,
-        average: Optional[str] = None,
+        average: Optional[str] = 'binary',
     ) -> float:
         """
         Compute F1-Measure (Harmonic Mean of Precision and Recall).
@@ -125,7 +125,7 @@ class BinaryClassificationMetrics:
             y_true: Ground truth binary labels.
             y_pred: Predicted binary labels.
             pos_label: The positive label class.
-            average: Type of averaging (None for binary classification).
+            average: Type of averaging ('binary' for binary classification).
         
         Returns:
             float: F1-score between 0 and 1.
@@ -214,7 +214,7 @@ class BinaryClassificationMetrics:
         y_true: np.ndarray,
         y_pred: Union[np.ndarray, list],
         pos_label: int = 1,
-        average: Optional[str] = None,
+        average: Optional[str] = 'binary',
     ) -> float:
         """
         Compute Recall (Sensitivity or True Positive Rate).
@@ -225,7 +225,7 @@ class BinaryClassificationMetrics:
             y_true: Ground truth binary labels.
             y_pred: Predicted binary labels.
             pos_label: The positive label class.
-            average: Type of averaging (None for binary classification).
+            average: Type of averaging ('binary' for binary classification).
         
         Returns:
             float: Recall score between 0 and 1.

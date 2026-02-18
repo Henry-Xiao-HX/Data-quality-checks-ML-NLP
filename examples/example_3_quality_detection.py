@@ -4,7 +4,7 @@ Demonstrates detection of common data quality problems.
 """
 
 import sys
-sys.path.insert(0, '../src')
+sys.path.insert(0, 'src')
 
 from data_quality_checker import DataQualityChecker
 from utils import (

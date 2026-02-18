@@ -5,8 +5,11 @@ This example demonstrates how to use the RegressionChecker module
 to compute quality metrics for regression models.
 """
 
+import sys
+sys.path.insert(0, 'src')
+
 import numpy as np
-from src.regression import RegressionChecker
+from regression import RegressionChecker
 
 # Generate sample data
 np.random.seed(42)

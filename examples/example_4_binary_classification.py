@@ -5,8 +5,11 @@ This example demonstrates how to use the BinaryClassifierChecker module
 to compute quality metrics for binary classification models.
 """
 
+import sys
+sys.path.insert(0, 'src')
+
 import numpy as np
-from src.binary_classification import BinaryClassifierChecker
+from binary_classification import BinaryClassifierChecker
 
 # Generate sample data
 np.random.seed(42)

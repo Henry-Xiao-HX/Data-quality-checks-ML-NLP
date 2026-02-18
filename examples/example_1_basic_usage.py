@@ -4,10 +4,10 @@ Demonstrates simple usage of ROUGE and BLEU metrics.
 """
 
 import sys
-sys.path.insert(0, '../src')
+sys.path.insert(0, 'src')
 
 from data_quality_checker import DataQualityChecker
-
+# from src.data_quality_checker import DataQualityChecker
 
 def main():
     # Initialize the checker

@@ -4,7 +4,7 @@ Demonstrates batch computation and aggregation of metrics across samples.
 """
 
 import sys
-sys.path.insert(0, '../src')
+sys.path.insert(0, 'src')
 
 from data_quality_checker import DataQualityChecker, QualityMetricsAggregator
 

@@ -7,8 +7,11 @@ Demonstrates comprehensive quality assessment across all model types:
 - Generative AI text models
 """
 
+import sys
+sys.path.insert(0, 'src')
+
 import numpy as np
-from src import UnifiedDataQualityChecker
+from unified_quality_checker import UnifiedDataQualityChecker
 
 # Initialize unified checker
 checker = UnifiedDataQualityChecker()

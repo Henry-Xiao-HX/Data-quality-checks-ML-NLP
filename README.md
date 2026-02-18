@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Multi-task data quality checker for binary classification, regression, and generative AI models. Supports ROUGE/BLEU metrics (text), classification metrics (precision/recall/F1), and regression metrics (MAE/MSE/RMSE/R²).
+Data quality checker for binary classification, regression, and generative AI models. Supports ROUGE/BLEU metrics (text), classification metrics (precision/recall/F1), and regression metrics (MAE/MSE/RMSE/R²).
 
 ## Project Structure
 
@@ -35,7 +35,7 @@ examples/
 ## Installation
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/Henry-Xiao-HX/Data-quality-checks-ML-NLP.git
 cd Data-quality-checks-ML-NLP
 pip install -r requirements.txt
 ```
@@ -83,14 +83,9 @@ report = checker.check_quality(predictions, references, task_type='classificatio
 
 ### Run All Tests
 ```bash
-# With coverage
-python -m pytest tests/ --cov=src
-
-# Without coverage  
 python -m pytest tests/ -v
 
 # Using manage.sh
-bash manage.sh test              # With coverage
 bash manage.sh test-quick        # Without coverage
 ```
 
@@ -174,17 +169,9 @@ python run_examples.py
 ```bash
 # Setup
 bash manage.sh install               # Install dependencies
-bash manage.sh dev-install           # Install in dev mode
-bash manage.sh setup-dev             # Full setup (clean, install, lint, format, test)
 
 # Testing
-bash manage.sh test                  # Run tests with coverage
 bash manage.sh test-quick            # Run tests without coverage
-
-# Code Quality
-bash manage.sh lint                  # Run linter
-bash manage.sh format                # Format code
-bash manage.sh clean                 # Clean build artifacts
 
 # Examples
 bash manage.sh examples              # Run all examples
