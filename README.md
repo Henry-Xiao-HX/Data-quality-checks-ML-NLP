@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Data quality checker for binary classification, regression, and generative AI models. Supports ROUGE/BLEU metrics (text), classification metrics (precision/recall/F1), and regression metrics (MAE/MSE/RMSE/R²).
+Data quality checker for binary classification, regression, and generative AI models. Supports ROUGE/BLEU metrics (text), binary classification metrics (precision/recall/F1), and regression model metrics (MAE/MSE/RMSE/R²).
 
 ## Project Structure
 
@@ -58,7 +58,11 @@ bleu = checker.compute_bleu(["the cat sat"], [["a cat sat"]])
 from src.binary_classification.binary_classifier_checker import BinaryClassifierChecker
 
 checker = BinaryClassifierChecker()
-metrics = checker.compute_metrics([0, 1, 1, 0], [0, 1, 0, 0])
+metrics = checker.check_quality(
+    y_true=y_true,
+    y_pred=y_pred,
+    y_pred_proba=y_pred_proba,
+)
 # Returns: precision, recall, f1, accuracy
 ```
 
@@ -67,7 +71,10 @@ metrics = checker.compute_metrics([0, 1, 1, 0], [0, 1, 0, 0])
 from src.regression.regression_checker import RegressionChecker
 
 checker = RegressionChecker()
-metrics = checker.compute_metrics([2.1, 3.9, 5.8], [2.0, 4.0, 6.0])
+metrics = checker.check_quality(
+    y_true=y_true,
+    y_pred=y_pred,
+)
 # Returns: mae, mse, rmse, r2, mape
 ```
 
@@ -122,27 +129,6 @@ python run_examples.py
 | `compute_all_metrics(predictions, references, compute_rouge=True, compute_bleu=True)` | Same as above | Dict combining all metrics |
 | `batch_compute_metrics(predictions_list, references_list, aggregation_type='mean')` | predictions_list: List, references_list: List, aggregation_type: str | Aggregated metrics |
 
-### `src.binary_classification.binary_classifier_checker.BinaryClassifierChecker`
-
-**Methods:**
-
-| Method | Parameters | Returns |
-|--------|-----------|---------|
-| `compute_metrics(predictions, references, threshold=0.5)` | predictions: List[int/float], references: List[int], threshold: float | Dict with precision, recall, f1, accuracy, specificity, sensitivity |
-| `threshold_analysis(prediction_probs, references)` | prediction_probs: List[float], references: List[int] | Dict with optimal threshold and metrics for different thresholds |
-| `detect_data_imbalance(references)` | references: List[int] | Dict with class distribution and imbalance ratio |
-| `detect_quality_issues(predictions, references)` | predictions: List, references: List | Dict with issue locations and types |
-
-### `src.regression.regression_checker.RegressionChecker`
-
-**Methods:**
-
-| Method | Parameters | Returns |
-|--------|-----------|---------|
-| `compute_metrics(predictions, references)` | predictions: List[float], references: List[float] | Dict with mae, mse, rmse, r2, mape |
-| `residual_analysis(predictions, references)` | predictions: List[float], references: List[float] | Dict with residuals, mean_residual, std_residual |
-| `outlier_detection(predictions, references, threshold=2.0)` | predictions: List[float], references: List[float], threshold: float | Dict with outlier indices and values |
-| `correlation_analysis(inputs, predictions)` | inputs: List[List[float]], predictions: List[float] | Correlation coefficients |
 
 ### `src.unified_quality_checker.UnifiedQualityChecker`
 
