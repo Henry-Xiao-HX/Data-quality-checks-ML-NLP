@@ -9,7 +9,10 @@ from pathlib import Path
 # Add src to path for direct imports
 sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
 
+import numpy as np
 from data_quality_checker import DataQualityChecker, QualityMetricsAggregator
+from binary_classification import BinaryClassifierChecker
+from regression import RegressionChecker
 
 
 class TestDataQualityChecker(unittest.TestCase):
@@ -209,6 +212,196 @@ class TestEdgeCases(unittest.TestCase):
         # Scores should be 0 or very low
         for key in ['rouge1', 'rouge2', 'rougeL']:
             self.assertLess(result[key], 0.1)
+
+
+class TestBinaryClassificationChecker(unittest.TestCase):
+    """Test cases for BinaryClassifierChecker."""
+    
+    def setUp(self):
+        """Initialize binary classification checker for each test."""
+        self.checker = BinaryClassifierChecker()
+        np.random.seed(42)
+        self.n_samples = 100
+        self.y_true = np.random.randint(0, 2, self.n_samples)
+        self.y_pred = np.random.randint(0, 2, self.n_samples)
+        self.y_pred_proba = np.random.rand(self.n_samples)
+    
+    def test_check_quality_basic(self):
+        """Test basic quality check with binary predictions."""
+        metrics = self.checker.check_quality(
+            y_true=self.y_true,
+            y_pred=self.y_pred
+        )
+        
+        self.assertIn('precision', metrics)
+        self.assertIn('recall', metrics)
+        self.assertIn('f1_measure', metrics)
+        self.assertIn('true_positive_rate', metrics)
+        self.assertIn('false_positive_rate', metrics)
+    
+    def test_check_quality_with_probabilities(self):
+        """Test quality check with probability predictions."""
+        metrics = self.checker.check_quality(
+            y_true=self.y_true,
+            y_pred=self.y_pred,
+            y_pred_proba=self.y_pred_proba
+        )
+        
+        self.assertIn('roc_auc', metrics)
+        self.assertIn('log_loss', metrics)
+        self.assertIn('auc_pr', metrics)
+    
+    def test_compute_precision(self):
+        """Test precision computation."""
+        precision = self.checker.compute_precision(self.y_true, self.y_pred)
+        
+        self.assertIsInstance(precision, float)
+        self.assertGreaterEqual(precision, 0.0)
+        self.assertLessEqual(precision, 1.0)
+    
+    def test_compute_recall(self):
+        """Test recall computation."""
+        recall = self.checker.compute_recall(self.y_true, self.y_pred)
+        
+        self.assertIsInstance(recall, float)
+        self.assertGreaterEqual(recall, 0.0)
+        self.assertLessEqual(recall, 1.0)
+    
+    def test_compute_f1_measure(self):
+        """Test F1-measure computation."""
+        f1 = self.checker.compute_f1_measure(self.y_true, self.y_pred)
+        
+        self.assertIsInstance(f1, float)
+        self.assertGreaterEqual(f1, 0.0)
+        self.assertLessEqual(f1, 1.0)
+    
+    def test_compute_roc_auc(self):
+        """Test ROC AUC computation."""
+        roc_auc = self.checker.compute_roc_auc(self.y_true, self.y_pred_proba)
+        
+        self.assertIsInstance(roc_auc, float)
+        self.assertGreaterEqual(roc_auc, 0.0)
+        self.assertLessEqual(roc_auc, 1.0)
+    
+    def test_perfect_predictions(self):
+        """Test with perfect predictions."""
+        y_true = np.array([0, 1, 0, 1, 1])
+        y_pred = np.array([0, 1, 0, 1, 1])
+        
+        precision = self.checker.compute_precision(y_true, y_pred)
+        recall = self.checker.compute_recall(y_true, y_pred)
+        f1 = self.checker.compute_f1_measure(y_true, y_pred)
+        
+        self.assertAlmostEqual(precision, 1.0)
+        self.assertAlmostEqual(recall, 1.0)
+        self.assertAlmostEqual(f1, 1.0)
+    
+    def test_mismatched_lengths(self):
+        """Test with mismatched input lengths."""
+        with self.assertRaises(ValueError):
+            self.checker.check_quality(
+                y_true=np.array([0, 1, 0]),
+                y_pred=np.array([1, 0])
+            )
+
+
+class TestRegressionChecker(unittest.TestCase):
+    """Test cases for RegressionChecker."""
+    
+    def setUp(self):
+        """Initialize regression checker for each test."""
+        self.checker = RegressionChecker()
+        np.random.seed(42)
+        self.n_samples = 100
+        self.y_true = np.random.rand(self.n_samples) * 100
+        self.noise = np.random.normal(0, 5, self.n_samples)
+        self.y_pred = self.y_true + self.noise
+    
+    def test_check_quality(self):
+        """Test quality check for regression."""
+        metrics = self.checker.check_quality(
+            y_true=self.y_true,
+            y_pred=self.y_pred
+        )
+        
+        self.assertIn('r_squared', metrics)
+        self.assertIn('explained_variance', metrics)
+        self.assertIn('rmse', metrics)
+        self.assertIn('mae', metrics)
+        self.assertIn('mse', metrics)
+    
+    def test_compute_r_squared(self):
+        """Test R-squared computation."""
+        r_squared = self.checker.compute_r_squared(self.y_true, self.y_pred)
+        
+        self.assertIsInstance(r_squared, float)
+        # R-squared can be negative for very poor models
+        self.assertLess(r_squared, 1.0)
+    
+    def test_compute_rmse(self):
+        """Test RMSE computation."""
+        rmse = self.checker.compute_rmse(self.y_true, self.y_pred)
+        
+        self.assertIsInstance(rmse, float)
+        self.assertGreaterEqual(rmse, 0.0)
+    
+    def test_compute_mae(self):
+        """Test MAE computation."""
+        mae = self.checker.compute_mae(self.y_true, self.y_pred)
+        
+        self.assertIsInstance(mae, float)
+        self.assertGreaterEqual(mae, 0.0)
+    
+    def test_compute_mse(self):
+        """Test MSE computation."""
+        mse = self.checker.compute_mse(self.y_true, self.y_pred)
+        
+        self.assertIsInstance(mse, float)
+        self.assertGreaterEqual(mse, 0.0)
+    
+    def test_compute_explained_variance(self):
+        """Test explained variance computation."""
+        explained_var = self.checker.compute_explained_variance(self.y_true, self.y_pred)
+        
+        self.assertIsInstance(explained_var, float)
+        self.assertLess(explained_var, 1.0)
+    
+    def test_perfect_predictions(self):
+        """Test with perfect predictions."""
+        y_true = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
+        y_pred = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
+        
+        r_squared = self.checker.compute_r_squared(y_true, y_pred)
+        rmse = self.checker.compute_rmse(y_true, y_pred)
+        mae = self.checker.compute_mae(y_true, y_pred)
+        
+        self.assertAlmostEqual(r_squared, 1.0, places=5)
+        self.assertAlmostEqual(rmse, 0.0, places=5)
+        self.assertAlmostEqual(mae, 0.0, places=5)
+    
+    def test_get_residuals(self):
+        """Test residuals computation."""
+        residuals = self.checker.get_residuals(self.y_true, self.y_pred)
+        
+        self.assertEqual(len(residuals), self.n_samples)
+        self.assertIsInstance(residuals, np.ndarray)
+    
+    def test_get_residual_stats(self):
+        """Test residual statistics."""
+        residual_stats = self.checker.get_residual_stats(self.y_true, self.y_pred)
+        
+        self.assertIn('mean', residual_stats)
+        self.assertIn('std', residual_stats)
+        self.assertIn('min', residual_stats)
+        self.assertIn('max', residual_stats)
+    
+    def test_mismatched_lengths(self):
+        """Test with mismatched input lengths."""
+        with self.assertRaises(ValueError):
+            self.checker.check_quality(
+                y_true=np.array([1.0, 2.0, 3.0]),
+                y_pred=np.array([1.0, 2.0])
+            )
 
 
 if __name__ == '__main__':
