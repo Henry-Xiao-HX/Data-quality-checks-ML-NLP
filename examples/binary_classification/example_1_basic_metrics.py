@@ -1,8 +1,7 @@
 """
-Simple Example: Binary Classification Quality Checks
-
-This minimal example demonstrates how to use the BinaryClassifierChecker module
-to compute quality metrics for binary classification models.
+Binary Classification Example 1: Basic Quality Metrics
+Demonstrates how to use BinaryClassifierChecker to compute
+quality metrics for a binary classification model.
 """
 
 import sys
@@ -15,19 +14,13 @@ from binary_classification import BinaryClassifierChecker
 np.random.seed(42)
 n_samples = 50
 
-# Ground truth labels
 y_true = np.random.randint(0, 2, n_samples)
-
-# Predicted binary labels
 y_pred = np.random.randint(0, 2, n_samples)
-
-# Predicted probabilities
 y_pred_proba = np.random.rand(n_samples)
 
-# Initialize the checker
 checker = BinaryClassifierChecker()
 
-# Compute all metrics
+# All metrics at once
 print("=" * 60)
 print("BINARY CLASSIFICATION QUALITY METRICS")
 print("=" * 60)
@@ -47,9 +40,12 @@ print("\n" + "=" * 60)
 print("INDIVIDUAL METRICS")
 print("=" * 60)
 
-print(f"\nROC AUC: {checker.compute_roc_auc(y_true, y_pred_proba):.4f}")
-print(f"Precision: {checker.compute_precision(y_true, y_pred):.4f}")
-print(f"Recall: {checker.compute_recall(y_true, y_pred):.4f}")
+print(f"\nROC AUC:    {checker.compute_roc_auc(y_true, y_pred_proba):.4f}")
+print(f"Precision:  {checker.compute_precision(y_true, y_pred):.4f}")
+print(f"Recall:     {checker.compute_recall(y_true, y_pred):.4f}")
 print(f"F1-Measure: {checker.compute_f1_measure(y_true, y_pred):.4f}")
+print(f"Log Loss:   {checker.compute_log_loss(y_true, y_pred_proba):.4f}")
 
 print("\n" + "=" * 60)
+
+# Made with Bob

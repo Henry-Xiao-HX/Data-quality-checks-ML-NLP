@@ -1,8 +1,7 @@
 """
-Simple Example: Regression Quality Checks
-
-This minimal example demonstrates how to use the RegressionChecker module
-to compute quality metrics for regression models.
+Regression Example 1: Basic Quality Metrics
+Demonstrates how to use RegressionChecker to compute
+quality metrics for a regression model.
 """
 
 import sys
@@ -15,17 +14,13 @@ from regression import RegressionChecker
 np.random.seed(42)
 n_samples = 50
 
-# Ground truth values
 y_true = np.random.rand(n_samples) * 100
-
-# Predicted values (with some noise)
 noise = np.random.normal(0, 5, n_samples)
 y_pred = y_true + noise
 
-# Initialize the checker
 checker = RegressionChecker()
 
-# Compute all metrics
+# All metrics at once
 print("=" * 60)
 print("REGRESSION QUALITY METRICS")
 print("=" * 60)
@@ -44,10 +39,12 @@ print("\n" + "=" * 60)
 print("INDIVIDUAL METRICS")
 print("=" * 60)
 
-print(f"\nR-Squared: {checker.compute_r_squared(y_true, y_pred):.4f}")
+print(f"\nR-Squared:          {checker.compute_r_squared(y_true, y_pred):.4f}")
 print(f"Explained Variance: {checker.compute_explained_variance(y_true, y_pred):.4f}")
-print(f"RMSE: {checker.compute_rmse(y_true, y_pred):.4f}")
-print(f"MAE: {checker.compute_mae(y_true, y_pred):.4f}")
-print(f"MSE: {checker.compute_mse(y_true, y_pred):.4f}")
+print(f"RMSE:               {checker.compute_rmse(y_true, y_pred):.4f}")
+print(f"MAE:                {checker.compute_mae(y_true, y_pred):.4f}")
+print(f"MSE:                {checker.compute_mse(y_true, y_pred):.4f}")
 
 print("\n" + "=" * 60)
+
+# Made with Bob
