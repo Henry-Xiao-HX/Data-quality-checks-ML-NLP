@@ -27,7 +27,7 @@ class ROUGECalculator:
     - ROUGE-S: Skip-bigram overlap
     """
 
-    VALID_ROUGE_TYPES = {'rouge1', 'rouge2', 'rougeL', 'rougeLsum', 'rougeS'}
+    VALID_ROUGE_TYPES = {'rouge1', 'rouge2', 'rougeL', 'rougeLsum'}
 
     def __init__(self):
         """Initialize the ROUGE calculator."""
@@ -79,7 +79,7 @@ class ROUGECalculator:
             raise ValueError("references cannot be None")
 
         if rouge_types is None:
-            rouge_types = ['rouge1', 'rouge2', 'rougeL', 'rougeS']
+            rouge_types = ['rouge1', 'rouge2', 'rougeL']
 
         # Validate rouge_types
         invalid_types = set(rouge_types) - self.VALID_ROUGE_TYPES
@@ -138,7 +138,7 @@ class ROUGECalculator:
             ... )
             >>> # results = {'rouge1': {...}, 'rouge2': {...}, 'rougeL': {...}, 'rougeS': {...}}
         """
-        rouge_types = ['rouge1', 'rouge2', 'rougeL', 'rougeS']
+        rouge_types = ['rouge1', 'rouge2', 'rougeL']
         results = {}
 
         for rouge_type in rouge_types:
@@ -163,7 +163,6 @@ class ROUGECalculator:
             'rouge2': 'ROUGE-2: Overlap of bigrams (consecutive word pairs)',
             'rougeL': 'ROUGE-L: Longest common subsequence',
             'rougeLsum': 'ROUGE-Lsum: Longest common subsequence at summary level',
-            'rougeS': 'ROUGE-S: Skip-bigram overlap (allows gaps between matched words)',
         }
         return explanations.get(rouge_type, f'Unknown ROUGE type: {rouge_type}')
 

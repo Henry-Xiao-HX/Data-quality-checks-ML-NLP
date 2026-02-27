@@ -47,18 +47,12 @@ def text_data():
 def pytest_collection_modifyitems(config, items):
     """Add markers to tests for better organization."""
     for item in items:
-        # Mark test by module
         if "test_data_quality_checker" in str(item.fspath):
             item.add_marker(pytest.mark.text_metrics)
         elif "test_utils" in str(item.fspath):
             item.add_marker(pytest.mark.utils)
-        elif "test_binary" in str(item.fspath):
-            item.add_marker(pytest.mark.binary_classification)
-        elif "test_regression" in str(item.fspath):
-            item.add_marker(pytest.mark.regression)
 
 
-# Custom markers
 def pytest_configure(config):
     """Register custom markers."""
     config.addinivalue_line(
@@ -73,3 +67,5 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "utils: tests for utility functions"
     )
+
+# Made with Bob
